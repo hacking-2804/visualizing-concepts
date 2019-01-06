@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Line drawing</title>
+    <link rel="stylesheet" href="pagestyle.css">
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+
+    <!-- Tangle -->
+    <script type="text/javascript" src="Tangle.js"></script>
+
+    <!-- TangleKit (optional) -->
+    <link rel="stylesheet" href="TangleKit/TangleKit.css" type="text/css">
+    <script type="text/javascript" src="TangleKit/mootools.js"></script>
+    <script type="text/javascript" src="TangleKit/sprintf.js"></script>
+    <script type="text/javascript" src="TangleKit/BVTouchable.js"></script>
+    <script type="text/javascript" src="TangleKit/TangleKit.js"></script>
+  </head>
+  <body>
+    <div id="bitstrings">
+      <svg width="550" height="20">
+      </svg>
+      <body onload="setUpTangle();">
+
+        <u><h1>Bit Strings</h1></u>
+        <h3>What is a bit string?</h3>
+
+        <!-- Add bit string definition here -->
+        <p id="bitstring">
+          With a bitstring of <span data-var="bitLength" class="TKAdjustableNumber"
+            data-min="0" data-max="8"> bits</span>, there
+          are <span data-var="numBitStrings"></span> permutations.
+        </p>
+
+        <h3>Example</h3>
+        <p id="fixedSequenceExample">
+          How many bitstring of length <span data-var="bitLength" class="TKAdjustableNumber" data-min="10" data-max="60"></span> start with '101' or end with '1111'. Note: the use
+          of the word 'or' always means <span>&#8899;</span> (union) and the word 'and' always means <span>&#8898;</span> 
+          (intersection) <br>
+          Answer: 2<sup><span data-var="bitRemPre"></span></sup> + 2<sup><span data-var="bitRemPost"></span></sup> - 2<sup><span data-var="bitRem"></span></sup><br><br>
+
+          The amount of bitstrings of length <span data-var="bitLength"></span> that start with '101' = 2<sup><span data-var="bitRemPre"></span></sup>
+          since the first 3 bits are fixed ('101' for each possible bitstring) we end up counting 
+          2<sup><span data-var="bitLength"></span> - 3</sup> = 2<sup><span data-var="bitRemPre"></span></sup> possible configurations. Note: this is the same as counting
+          all possible configurations of a bit string of length <span data-var="bitRemPre"></span>, which results in 2<sup><span data-var="bitRemPre"></span></sup> 
+          possible bitstrings. Appending '101' to the front of each generated bitstring of length 52, 
+          would not change how many bit strings there are.<br><br>
+          The amount of bitstrings of length <span data-var="bitLength"></span> that end with '1111' = 2<sup><span data-var="bitRemPost"></span></sup> using the same 
+          reasoning. As above. <br><br>
+          Let A = the set of all bit strings of length <span data-var="bitLength"></span> that start with '101' and B = the set of all bit 
+          strings of length <span data-var="bitLength"></span> that end with '1111' and C = the number of all possible bit strings 
+          of length <span data-var="bitLength"></span> that start with '101' AND end with '1111' (Make sure you notice the use of the word 'and'
+          as opposed to 'or'). The two sets both A and B each contain all possible bit strings of length <span data-var="bitLength"></span> 
+          that start with '101' and '1111'. Therefore, adding the size of the two sets A and B will not result
+          in the correct answer, it will count the set of all possible bit strings of length <span data-var="bitLength"></span> that 
+          start with '101' and '1111' twice. Therefore we must subtract the number of all possible bit strings 
+          of length <span data-var="bitLength"></span> that start with '101' and '1111' so that C is counted once in the final answer. 
+          The final answer is then... <br>
+          |A| + |B| - |C| = |A| + |B| - |A| <span>&#8898;</span> |B| <br>
+          = 2<sup><span data-var="bitRemPre"></span></sup> + 2<sup><span data-var="bitRemPost"></span></sup> - 2<sup><span data-var="bitRem"></span></sup> <br><br>
+          The rule used above for subtratcting the intersetion of A and B is called inclusion-exclusion and is 
+          required when adding two sets together that are not disjoint. <br><br>
+        </p>
+
+        <h3>Demo</h3>
+        <p>
+          Try modifying the parameters below to explore bitstring possibilities!
+        </p>
+        <p id="bitstring2">How many bitstrings of length <span data-var="numBits" class="TKAdjustableNumber" data-min="8" data-max="30"></span>
+          start with <span data-var="numPreBits" class="TKBinaryField"></span> 
+          <span data-var="operation" class="TKToggleAnd" style="color: blue"></span> end with <span data-var="numPostBits" class="TKBinaryField"></span>.<br>
+          BitString Form: <span id="form"></span><br>
+          Answer: <span id="answer"></span> = <span data-var="numBitStrings"></span><br><br>
+        </p>  
+
+        <h3>Quiz</h3>
+        <p id="q1">
+          Given a bitstring of length <span data-var="q1x"></span>, how many possible bitstrings are there?<br>
+          Your answer: <span id="q1aFinal" data-var="answer" style="visibility: hidden"></span><span id="q1aBox" data-var="answer" class="TKNumberField"><span id="q1Cheat" data-var="q1Cheat" class="TKToggleCheat" style="color: blue"></span><br>
+          <span id="q1Correct" style="visibility: hidden">Correct Answer: <span data-var="correct"></span>
+        </p>
+
+        <p id="q2">
+            Given a bitstring of length <span data-var="q2x"></span>, how many bitstrings exist that begin with the pattern 101?<br>
+            Your answer: <span id="q2aFinal" data-var="answer" style="visibility: hidden"></span><span id="q2aBox" data-var="answer" class="TKNumberField"><span id="q2Cheat" data-var="q2Cheat" class="TKToggleCheat" style="color: blue"></span><br>
+            <span id="q2Correct" style="visibility: hidden">Correct Answer: <span data-var="correct"></span>
+          </p>
+      </body>
+
+
+      <u><h1>X-Free bitstring</h1></u>
+      <h3>What is a bit string?</h3>
+
+      <!-- Add bit string definition here -->
+      <p id="bitstring">
+        With a bitstring of <span data-var="bitLength" class="TKAdjustableNumber"
+          data-min="0" data-max="8"> bits</span>, there
+        are <span data-var="numBitStrings"></span> permutations.
+      </p>
+
+      <h3>Example</h3>
+      <p id="fixedSequenceExample">
+        How many bitstring of length <span data-var="bitLength" class="TKAdjustableNumber" data-min="10" data-max="60"></span> start with '101' or end with '1111'. Note: the use
+        of the word 'or' always means <span>&#8899;</span> (union) and the word 'and' always means <span>&#8898;</span> 
+        (intersection) <br>
+        Answer: 2<sup><span data-var="bitRemPre"></span></sup> + 2<sup><span data-var="bitRemPost"></span></sup> - 2<sup><span data-var="bitRem"></span></sup><br><br>
+
+        The amount of bitstrings of length <span data-var="bitLength"></span> that start with '101' = 2<sup><span data-var="bitRemPre"></span></sup>
+        since the first 3 bits are fixed ('101' for each possible bitstring) we end up counting 
+        2<sup><span data-var="bitLength"></span> - 3</sup> = 2<sup><span data-var="bitRemPre"></span></sup> possible configurations. Note: this is the same as counting
+        all possible configurations of a bit string of length <span data-var="bitRemPre"></span>, which results in 2<sup><span data-var="bitRemPre"></span></sup> 
+        possible bitstrings. Appending '101' to the front of each generated bitstring of length 52, 
+        would not change how many bit strings there are.<br><br>
+        The amount of bitstrings of length <span data-var="bitLength"></span> that end with '1111' = 2<sup><span data-var="bitRemPost"></span></sup> using the same 
+        reasoning. As above. <br><br>
+        Let A = the set of all bit strings of length <span data-var="bitLength"></span> that start with '101' and B = the set of all bit 
+        strings of length <span data-var="bitLength"></span> that end with '1111' and C = the number of all possible bit strings 
+        of length <span data-var="bitLength"></span> that start with '101' AND end with '1111' (Make sure you notice the use of the word 'and'
+        as opposed to 'or'). The two sets both A and B each contain all possible bit strings of length <span data-var="bitLength"></span> 
+        that start with '101' and '1111'. Therefore, adding the size of the two sets A and B will not result
+        in the correct answer, it will count the set of all possible bit strings of length <span data-var="bitLength"></span> that 
+        start with '101' and '1111' twice. Therefore we must subtract the number of all possible bit strings 
+        of length <span data-var="bitLength"></span> that start with '101' and '1111' so that C is counted once in the final answer. 
+        The final answer is then... <br>
+        |A| + |B| - |C| = |A| + |B| - |A| <span>&#8898;</span> |B| <br>
+        = 2<sup><span data-var="bitRemPre"></span></sup> + 2<sup><span data-var="bitRemPost"></span></sup> - 2<sup><span data-var="bitRem"></span></sup> <br><br>
+        The rule used above for subtratcting the intersetion of A and B is called inclusion-exclusion and is 
+        required when adding two sets together that are not disjoint. <br><br>
+      </p>
+
+      <h3>Demo</h3>
+      <p>
+        Try modifying the parameters below to explore bitstring possibilities!
+      </p>
+      <p id="bitstring2">How many bitstrings of length <span data-var="numBits" class="TKAdjustableNumber" data-min="8" data-max="30"></span>
+        start with <span data-var="numPreBits" class="TKBinaryField"></span> 
+        <span data-var="operation" class="TKToggleAnd" style="color: blue"></span> end with <span data-var="numPostBits" class="TKBinaryField"></span>.<br>
+        BitString Form: <span id="form"></span><br>
+        Answer: <span id="answer"></span> = <span data-var="numBitStrings"></span><br><br>
+      </p>  
+
+      <h3>Quiz</h3>
+      <p id="q1">
+        Given a bitstring of length <span data-var="q1x"></span>, how many possible bitstrings are there?<br>
+        Your answer: <span id="q1aFinal" data-var="answer" style="visibility: hidden"></span><span id="q1aBox" data-var="answer" class="TKNumberField"><span id="q1Cheat" data-var="q1Cheat" class="TKToggleCheat" style="color: blue"></span><br>
+        <span id="q1Correct" style="visibility: hidden">Correct Answer: <span data-var="correct"></span>
+      </p>
+
+      <p id="q2">
+          Given a bitstring of length <span data-var="q2x"></span>, how many bitstrings exist that begin with the pattern 101?<br>
+          Your answer: <span id="q2aFinal" data-var="answer" style="visibility: hidden"></span><span id="q2aBox" data-var="answer" class="TKNumberField"><span id="q2Cheat" data-var="q2Cheat" class="TKToggleCheat" style="color: blue"></span><br>
+          <span id="q2Correct" style="visibility: hidden">Correct Answer: <span data-var="correct"></span>
+        </p>
+      
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
